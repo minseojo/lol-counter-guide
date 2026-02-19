@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoL GM Mid Counter Guide</title>
+    <style>
+        :root {
+            --bg-color: #0b1622;
+            --card-bg: #152232;
+            --text-main: #f0f0f0;
+            --text-dim: #a0a8b3;
+            --accent: #c89b3c; /* LoL Gold */
+            --border: #303d4d;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 40px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            background-color: var(--card-bg);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #searchInput:focus {
+            border-color: var(--accent);
+        }
+
+        .counter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+
+        .champ-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .counter-list {
+            margin-bottom: 15px;
+        }
+
+        .counter-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+        }
+
+        .counter-picks {
+            font-weight: 600;
+            color: #ff5858; /* Alert red */
+        }
+
+        .logic-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+        }
+
+        .logic-text {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #d1d1d1;
+        }
+
+        @media (max-width: 480px) {
+            .counter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>LoL Counter Dictionary</h1>
+    <p style="color: var(--text-dim);"> 리그오브레전드 미드 라인전 상성 가이드</p>
+</header>
+
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="챔피언 이름을 입력하세요 (예: 라이즈, 오리아나)">
+</div>
+
+<div class="counter-grid" id="counterGrid">
+    </div>
+
+<script>
+    const data = [
+        { name: "라이즈", counters: "아리, 갈리오, 제드, 요네, 카시오페아, 애니비아", why: "짧은 사거리를 이용한 원거리 포킹 혹은 순간 돌진 후 폭딜에 취약. 카시오페아/애니비아는 라이즈보다 높은 유지력과 저지력을 보유." },
+        { name: "트페", counters: "제라스, 아리, 르블랑, 사일러스", why: "라인전 주도권을 뺏는 긴 사거리(제라스) 혹은 로밍을 억제하는 암살 능력. 사일러스는 트페의 궁극기를 뺏어 상위 호환 운영 가능." },
+        { name: "오리아나", counters: "제라스, 신드라, 빅토르, 아리", why: "구체의 사거리 밖에서 타격하는 사거리 격차. 아리의 경우 기동성으로 충격파(R)를 회피하며 변수 창출." },
+        { name: "갈리오", counters: "아리, 카시오페아, 애니비아, 라이즈, 트리스타나", why: "마저 효율을 무력화하는 지속 DPS(카시오페아, 라이즈) 혹은 순수 AD 압박(트리스타나)." },
+        { name: "아리", counters: "야스오, 벡스, 리산드라, 카사딘", why: "투사체 무력화(야스오 장막), 이동기 사용 시 패널티(벡스), 확정 타겟팅 CC(리산드라)에 약함." },
+        { name: "아칼리", counters: "갈리오, 벡스, 말자하, 판테온, 클레드", why: "은신을 무력화하는 타겟팅 CC 혹은 절대 시야(클레드, 판테온)를 보유한 브루저에게 취약." },
+        { name: "사일러스", counters: "오리아나, 갈리오, 카시오페아, 탈리야", why: "진입 경로를 차단하는 지면 장악(탈리야) 혹은 거리 조절을 통한 일방적인 딜교(오리아나)." },
+        { name: "요네", counters: "아칼리, 레넥톤, 판테온", why: "초반 약점을 파고드는 강력한 근접 맞딜과 확정 스턴. 아칼리는 장막으로 요네의 평타 딜링 타임을 낭비시킴." },
+        { name: "오로라", counters: "아리, 신드라, 빅토르, 벡스, 제라스, 이렐리아", why: "짧은 사거리와 은신을 카운터 치는 광역 폭딜(신드라) 혹은 끝까지 따라붙는 추격 능력(이렐리아)." },
+        { name: "조이", counters: "아리, 오리아나, 신드라, 말자하", why: "수면(E)을 무효화하는 패시브(말자하) 혹은 스킬 궤적을 예측해 먼저 때리는 사거리 우위." },
+        { name: "키아나", counters: "다이애나, 벡스, 리산드라, 레넥톤", why: "진입 시 역관광을 보내는 단단한 몸(다이애나) 혹은 즉발 광역 CC(리산드라, 벡스)." },
+        { name: "탈리야", counters: "제라스, 아칼리, 에코, 제드, 피즈", why: "E(대지의 파동) 위를 이동기가 아닌 판정(순보, 재간둥이)으로 넘거나 사거리 밖에서 요격." },
+        { name: "르블랑", counters: "벡스, 말자하, 카사딘, 리산드라, 갈리오, 나피리", why: "W(왜곡)의 복귀 지점을 장악하거나, 사슬(E)을 대신 맞아주는 소환수(나피리) 보유 챔피언." },
+        { name: "제드", counters: "아리, 말파이트, 애니비아, 판테온, 블라디미르", why: "궁극기 폭딜을 무적/웅덩이(블라디)로 씹거나 방어력 스택(말파이트)으로 데미지 무력화." },
+        { name: "신드라", counters: "갈리오, 에코, 피즈, 카사딘", why: "적군 와해(E)를 피하며 안으로 파고드는 회피 기동 혹은 마법 저항력 기반의 버티기." },
+        { name: "카타리나", counters: "벡스", why: "공포 패시브 하나로 카타리나의 모든 진입과 궁극기 채널링을 완벽하게 끊어냄." },
+        { name: "리산드라", counters: "제라스, 빅토르", why: "리산드라의 짧은 팔이 닿지 않는 곳에서 라인을 밀어넣고 포킹하는 정통 메이지." },
+        { name: "제라스", counters: "아칼리, 다이애나, 피즈, 제드", why: "스킬 샷을 피하며 순식간에 거리를 좁히는 극강의 기동성과 암살 능력." },
+        { name: "아지르", counters: "신드라, 제라스, 빅토르", why: "병사를 세우기 전 본체를 타격하는 긴 사거리 스킬 셋." },
+        { name: "멜 (Mel)", counters: "제라스, 빅토르, 카사딘, 이렐리아, 아리", why: "투사체 반사(W)가 통하지 않는 레이저/평타 판정(빅토르, 이렐리아) 혹은 긴 쿨타임을 이용한 낚시." },
+        { name: "나피리", counters: "이렐리아, 벡스, 리산드라, 판테온, 카시오페아", why: "개(무리)를 이용해 쿨감을 돌리는 픽(이렐리아) 혹은 진입을 차단하는 늪(카시오페아)." },
+        { name: "흐웨이", counters: "아칼리, 제드", why: "스킬 시전 시간이 긴 틈을 타 파고드는 순간 이동기 보유 암살자." },
+        { name: "아우렐리온 솔", counters: "오리아나, 아칼리, 빅토르, 제드", why: "초반 약한 타이밍에 라인을 박아넣고 무한 다이브를 압박하거나 성장을 방해하는 픽." },
+        { name: "카사딘", counters: "판테온, 트리스타나", why: "초반 6레벨 전, 순수 AD 물리 딜로 라인전 자체를 파괴하고 타워 방패를 채굴." },
+        { name: "에코", counters: "카사딘, 사일러스, 판테온, 아칼리, 르블랑", why: "3타 패시브를 허용하지 않는 거리 조절 혹은 맞딜 능력. 사일러스는 에코 궁을 뺏어 역관광 가능." },
+        { name: "애니비아", counters: "제라스, 빅토르, 아우렐리온 솔", why: "궁극기 채널링을 취소시킬 수 있는 CC 혹은 벽을 무시하고 타격하는 초장거리 포킹." },
+        { name: "빅토르", counters: "제라스, 신드라, 에코, 피즈", why: "E 레이저 사거리 밖의 더 긴 사거리 혹은 중력장(W)을 무시하고 진입하는 이동기." },
+        { name: "스몰더", counters: "아칼리, 르블랑, 제드, 요네, 이렐리아", why: "스택을 쌓기 전 초반에 숨도 못 쉬게 몰아붙여 왕귀 타이밍을 늦추는 암살자/브루저." },
+        { name: "벨코즈", counters: "아칼리, 제드, 피즈", why: "스킬이 모두 논타겟이므로, 안쪽으로 파고드는 순간 무력해지는 정통 포킹 메이지의 약점 활용." },
+        { name: "베이가", counters: "피즈, 제드", why: "사건의 지평선(E)에 갇히기 전 혹은 벽을 넘어서 베이가를 원콤 낼 수 있는 암살자." },
+        { name: "야스오", counters: "레넥톤, 판테온, 세트, 애니비아", why: "장막이 무의미한 근접 물리 브루저 혹은 장막을 무시하는 장판형 CC(애니비아)." },
+        { name: "말자하", counters: "빅토르, 제라스, 가렌", why: "공허충을 순식간에 지우는 광역기 혹은 궁극기를 무시하고 들어오는 침묵/정화기(가렌)." },
+        { name: "피즈", counters: "리산드라, 갈리오, 아칼리", why: "재간둥이를 써도 남는 타겟팅 CC 혹은 맞딜에서 밀리지 않는 탱킹력/은신." }
+    ];
+
+    const grid = document.getElementById('counterGrid');
+    const searchInput = document.getElementById('searchInput');
+
+    function renderCards(filter = '') {
+        grid.innerHTML = '';
+        const filteredData = data.filter(item => 
+            item.name.toLowerCase().includes(filter.toLowerCase())
+        );
+
+        filteredData.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="champ-name">${item.name}</div>
+                <div class="counter-list">
+                    <div class="counter-label">카운터 픽</div>
+                    <div class="counter-picks">${item.counters}</div>
+                </div>
+                <div class="logic-container">
+                    <div class="logic-label">카운터 로직</div>
+                    <div class="logic-text">${item.why}</div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    searchInput.addEventListener('input', (e) => {
+        renderCards(e.target.value);
+    });
+
+    // 초기 렌더링
+    renderCards();
+</script>
+
+</body>
+</html>
